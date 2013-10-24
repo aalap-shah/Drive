@@ -8,6 +8,7 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -18,8 +19,8 @@ public class MainActivity extends Activity {
 	private int lineFreq = 0;
 	
 	private int mHeight = 0;
-	private static int RECORDER_SAMPLERATE = 8000;
-	private static int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
+	private static int RECORDER_SAMPLERATE = 44100;
+	private static int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
 	private static int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 	private static AudioRecord mAudioRecorder = null;
 	private static int mBufferSizeInBytes = 0;
@@ -59,12 +60,25 @@ public class MainActivity extends Activity {
 		mAudioBuffer = new byte[mBufferSizeInBytes];
 
 		recordNow();
+		
+		
+		mMap.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				if(com.agreeya.audiodetectionapp.Log.file()){
+				
+				}
+				com.agreeya.audiodetectionapp.Log.init(getApplicationContext());
+			}
+		});
 	}
 
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
 		shouldStop = true;
+		com.agreeya.audiodetectionapp.Log.file();
 		super.onPause();
 	}
 	
@@ -72,7 +86,6 @@ public class MainActivity extends Activity {
 	private int standardCrossingValue = 0;
 	private int crossingValueSetCounter = 0;
 	private int multiplier = 1;
-	
 	public void recordNow() {
 		mMap.postDelayed(new Runnable() {
 
@@ -85,58 +98,72 @@ public class MainActivity extends Activity {
 				int numberOfReadBytes = mAudioRecorder.read(mAudioBuffer, 0,
 						mBufferSizeInBytes);
 				
-				final int byteSize= 128;
-				byte[] input = new byte[byteSize];
-				for( int i=0; i< numberOfReadBytes/byteSize; i++ ) 
-				{
-					for(int j=0;j<byteSize;j++){
-						input[j]= mAudioBuffer[(i*byteSize)+j];
-					}
+//				final int byteSize= 128;
+//				byte[] input = new byte[byteSize];
+//				int freqValue=0;
+//				for( int i=0; i< numberOfReadBytes/byteSize; i++ ) 
+//				{
+//					for(int j=0;j<byteSize;j++){
+//						input[j]= mAudioBuffer[(i*byteSize)+j];
+//					}
 //					Complex[] fftTempArray = doFFT(input, byteSize);
-//					int freqValue=0;
+//					
 //					for(int j = 0 ; j< fftTempArray.length ; j++){
 //						freqValue =( (int)fftTempArray[j].abs() + freqValue )/2;
 //					}
-//					freqValue = freqValue/2;
-//					mMap.addPoint(lineFreq,  freqValue);
-					
-					double [] array = calculateFFT(input, byteSize/2);
-					int freqValue=0;
-					for(int j = 0 ; j< array.length ; j++){
-						freqValue = (int)array[j];
-						mMap.addPoint(lineFreq,  freqValue);
-					}
-					Log.d("asd", "freqValue = " + freqValue);
-					
-				}
+//					
+//					
+////					double [] array = calculateFFT(input, byteSize/2);
+////					int freqValue=0;
+////					for(int j = 0 ; j< array.length ; j++){
+////						freqValue = (int)array[j];
+////						mMap.addPoint(lineFreq,  freqValue);
+////					}
+//					
+//				}
+//
+//				Log.d("asd", "freqValue = " + freqValue);
+//				mMap.addPoint(lineFreq,  freqValue);
 				
 				
+				double temp;
 				int zeroCrossing = 0;
 				int noOfSamples = 0;
-				for (int i = 2; i < mBufferSizeInBytes; i = i + 2) {
-					sample1 = (short) ((mAudioBuffer[i]) | mAudioBuffer[i + 1] << 8);
+				for (int i = 2 ,  fftIndex = 0; i < mBufferSizeInBytes; i = i + 2) {
+					 temp= ((mAudioBuffer[i]) | mAudioBuffer[i + 1] << 8);
+					sample1 = (short)temp;
 					sample2 = (short) ((mAudioBuffer[i - 2]) | mAudioBuffer[i - 1] << 8);
 					if (sample1 * sample2 < 0) {
 						zeroCrossing++;
 					}
+					if(fftIndex < mNumberOfFFTPoints){
+						complexSignal[fftIndex] = new Complex(temp/ 32768.0F,0.0);
+					}
 					noOfSamples++;
+					fftIndex++;
 				}
 				if(crossingValueSetCounter < 100) {
 					standardCrossingValue = (standardCrossingValue + Math.abs(zeroCrossing))/2;
 					crossingValueSetCounter++;
 				}
 				
-				Log.d("asd", "NoOfSample = " + noOfSamples + " 0Cross="
-						+ zeroCrossing + " standardCrossingValue =" + standardCrossingValue);
+				int point = (int)Math.abs(calculateFFT());
+				Log.d("asd", "freqValue = " + point+",  numberOfReadBytes = "+numberOfReadBytes);
+				mMap.addPoint(lineFreq, point);
+				
+				
+//				com.agreeya.audiodetectionapp.Log.d("asd", "NoOfSample = " + noOfSamples + " 0Cross="
+//						+ zeroCrossing + " standardCrossingValue =" + standardCrossingValue);
 						
 				mMap.addPoint(line, (mHeight/2) - ((zeroCrossing - standardCrossingValue) * multiplier));
 
 				if(!shouldStop)
-					mMap.postDelayed(this, 10);
+					mMap.postDelayed(this, 50);
 				else
 					mAudioRecorder.stop();
+				
 			}
-		}, 10);
+		}, 50);
 	}
 	
 	
@@ -145,6 +172,8 @@ public class MainActivity extends Activity {
 		double[] micBufferData = new double[totalByteBuffer.length];
 	    final int bytesPerSample = 2; // As it is 16bit PCM
 	    final double amplification = 100.0; // choose a number as you like
+	    
+	    
 	    for (int index = 0, floatIndex = 0; index < noOfBytes - bytesPerSample + 1; index += bytesPerSample, floatIndex++) {
 	        double sample = 0;
 	        for (int b = 0; b < bytesPerSample; b++) {
@@ -159,16 +188,6 @@ public class MainActivity extends Activity {
 	    }
 	    
 	    
-//	    StringBuilder strmicBufferData = new StringBuilder();
-//	    
-//	    strmicBufferData.append("\n\n Start **********strmicBufferData***************==\n");
-//	    for (int i = 0; i < micBufferData.length; i++) {
-//	    	strmicBufferData.append(" , "+micBufferData[i]);
-//		}
-//	    strmicBufferData.append("\n\nLenght = "+strmicBufferData.length()+"\n\n End **********strmicBufferData***************\n");
-//	    Log.d("TAG", strmicBufferData.toString());
-//	    Log.e("TAG","strmicBufferData lenght = "+strmicBufferData.length());
-//	    Log.e("TAG","micBufferData lenght = "+micBufferData.length);
 	    Complex[] fftTempArray = new Complex[micBufferData.length];
 	    for (int i=0; i<micBufferData.length; i++)
 	    {
@@ -189,23 +208,24 @@ public class MainActivity extends Activity {
 //	    Log.d("TAGOutput", str.toString());
 	}
 	
-	public double[] calculateFFT(byte[] signal, final int mNumberOfFFTPoints)
+	final int mNumberOfFFTPoints =2048;
+	Complex[] complexSignal = new Complex[mNumberOfFFTPoints];
+	double[] absSignal = new double[mNumberOfFFTPoints/2];
+	public double calculateFFT()
     {           
-        double mMaxFFTSample;
 
+//		Log.d("asd", "signal lengh = "+signal.length);
         double temp;
         Complex[] y;
-        Complex[] complexSignal = new Complex[mNumberOfFFTPoints];
-        double[] absSignal = new double[mNumberOfFFTPoints/2];
 
-        for(int i = 0; i < mNumberOfFFTPoints; i++){
-            temp = (double)((signal[2*i] & 0xFF) | (signal[2*i+1] << 8)) / 32768.0F;
-            complexSignal[i] = new Complex(temp,0.0);
-        }
+//        for(int fftIndex = 0; fftIndex < mNumberOfFFTPoints; fftIndex++){
+//            temp = (double)((signal[2*fftIndex] & 0xFF) | (signal[2*fftIndex+1] << 8)) / 32768.0F;
+//            complexSignal[fftIndex] = new Complex(temp,0.0);
+//        }
 
         y = FFT.fft(complexSignal); // --> Here I use FFT class
 
-        mMaxFFTSample = 0.0;
+        double mMaxFFTSample = 0.0;
         int mPeakPos = 0;
         for(int i = 0; i < (mNumberOfFFTPoints/2); i++)
         {
@@ -217,7 +237,7 @@ public class MainActivity extends Activity {
              } 
         }
 
-        return absSignal;
+        return absSignal[mPeakPos]*2;
 
     }
 	
