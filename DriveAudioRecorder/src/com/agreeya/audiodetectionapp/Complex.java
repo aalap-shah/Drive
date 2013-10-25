@@ -22,9 +22,21 @@ public class Complex {
     // return abs/modulus/magnitude and angle/phase/argument
     public double abs()   { return Math.hypot(re, im); }  // Math.sqrt(re*re + im*im)
     public double phase() { return Math.atan2(im, re); }  // between -pi and pi
+    
+    
+    
+ // return a new object whose value is (this * alpha)
+    public Complex times(double alpha) {
+        return new Complex(alpha * re, alpha * im);
+    }
+
+    // return a new Complex object whose value is the conjugate of this
+    public Complex conjugate() {  return new Complex(re, -im); }
+    
+    
 
     // return a new Complex object whose value is (this + b)
-    public Complex plus(Complex b) {
+   public Complex plus(Complex b) {
         Complex a = this;             // invoking object
         double real = a.re + b.re;
         double imag = a.im + b.im;
@@ -38,7 +50,7 @@ public class Complex {
         double imag = a.im - b.im;
         return new Complex(real, imag);
     }
-
+    
     // return a new Complex object whose value is (this * b)
     public Complex times(Complex b) {
         Complex a = this;
@@ -46,7 +58,14 @@ public class Complex {
         double imag = a.re * b.im + a.im * b.re;
         return new Complex(real, imag);
     }
+    
+    // return the real or imaginary part
+    public double re() { return re; }
+    public double im() { return im; }
 
+    
+    
+    /* 
     // scalar multiplication
     // return a new object whose value is (this * alpha)
     public Complex times(double alpha) {
@@ -62,10 +81,7 @@ public class Complex {
         return new Complex(re / scale, -im / scale);
     }
 
-    // return the real or imaginary part
-    public double re() { return re; }
-    public double im() { return im; }
-
+   
     // return a / b
     public Complex divides(Complex b) {
         Complex a = this;
@@ -122,6 +138,6 @@ public class Complex {
         System.out.println("conj(a)      = " + a.conjugate());
         System.out.println("|a|          = " + a.abs());
         System.out.println("tan(a)       = " + a.tan());
-    }
+    }*/
 
 }
