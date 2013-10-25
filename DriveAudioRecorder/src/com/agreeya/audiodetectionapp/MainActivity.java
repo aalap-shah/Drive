@@ -11,6 +11,7 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.renderscript.Sampler;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -25,7 +26,7 @@ public class MainActivity extends Activity {
 
 	private int mHeight = 0;
 	private static int RECORDER_SAMPLERATE = 44100;
-	private static int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
+	private static int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
 	private static int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 	private static AudioRecord mAudioRecorder = null;
 	private static int mBufferSizeInBytes = 0;
@@ -73,7 +74,7 @@ public class MainActivity extends Activity {
 
 		// Start Recording.
 		mAudioRecorder.startRecording();
-		mAudioBuffer = new byte[mBufferSizeInBytes];
+		mAudioBuffer = new byte[mNumberOfFFTPoints*2];
 		
 		
 		
@@ -83,7 +84,7 @@ public class MainActivity extends Activity {
 			int zeroCrossingPoint = 0;
 			@Override
 			public void handleMessage(Message msg) {
-				Log.d("asd", "Message received with what = "+msg.what);
+//				Log.d("asd", "Message received with what = "+msg.what);
 				
 				boolean shouldUpdateUI = false;
 				if(msg.what == MSG_WHAT_ZERO_CROSSING){
@@ -100,6 +101,7 @@ public class MainActivity extends Activity {
 				else if (msg.what == MSG_WHAT_FFT){
 					freqPoint = msg.arg1;
 					shouldUpdateUI = true;
+					Log.d("asd", "Message received with freq = "+freqPoint);
 				}
 				if(shouldUpdateUI){
 					mMap.addPoint(lineFreq, freqPoint);
@@ -146,6 +148,9 @@ public class MainActivity extends Activity {
 	private ZeroCrossingRunnable mRecordRunnable = null;
 	private FFTRunnable mFFTRunnable  = null;
 	public void recordNow() {
+		
+		mBufferSizeInBytes=
+		mNumberOfFFTPoints*2;
 		mRecordRunnable = new ZeroCrossingRunnable();
 		mFFTRunnable = new FFTRunnable();
 		pool.scheduleAtFixedRate(mRecordRunnable , 0, 10, TimeUnit.MILLISECONDS);
@@ -161,7 +166,9 @@ public class MainActivity extends Activity {
 			short sample2 = 0;
 
 			int numberOfReadBytes = mAudioRecorder.read(mAudioBuffer, 0,
-					mBufferSizeInBytes);
+					(mNumberOfFFTPoints*2 ));
+			
+//			Log.d("asd", "numberOfReadBytes = "+numberOfReadBytes+", mAudioBuffer = "+(mAudioBuffer==null ?"is NULL ":mAudioBuffer));
 
 			//			final int byteSize= 128;
 			//			byte[] input = new byte[byteSize];
@@ -278,11 +285,14 @@ public class MainActivity extends Activity {
 
 	final int mNumberOfFFTPoints =2048;
 	Complex[] complexSignal = new Complex[mNumberOfFFTPoints];
-	double[] absSignal = new double[mNumberOfFFTPoints/2];
+	double[] absSignal = new double[mNumberOfFFTPoints];
 	public double calculateFFT()
 	{           
-
-		//		Log.d("asd", "signal lengh = "+signal.length);
+		double mMaxFFTSample = 0.0;
+		int mPeakPos = 0;
+		int bitsPer =0;
+		try{
+		Log.d("asd", "signal lengh = "+mAudioBuffer.length);
 		double temp;
 		Complex[] y;
 		
@@ -295,22 +305,47 @@ public class MainActivity extends Activity {
 
 		y = FFT.fft(complexSignal); // --> Here I use FFT class
 
-		double mMaxFFTSample = 0.0;
-		int mPeakPos = 0;
-		for(int i = 0; i < (mNumberOfFFTPoints/2); i++)
+		
+		
+		 bitsPer =RECORDER_SAMPLERATE / (y.length*2);
+		
+		
+		
+		
+//		for(int i = 0; i < (mNumberOfFFTPoints/2); i++)
+//		{
+//			absSignal[i] = Math.sqrt(Math.pow(y[i].re(), 2) + Math.pow(y[i].im(), 2));
+//			if(absSignal[i] > mMaxFFTSample)
+//			{
+//				mMaxFFTSample = absSignal[i];
+//				mPeakPos = i;
+//			} 
+//		}
+		
+		
+		//Normal Human speech range 85-180 Hz: male and 165-255 Female
+		for(int i =50/bitsPer; i < 300/bitsPer; i++)
 		{
+//			mMaxFFTSample =  ((mMaxFFTSample + y[i].abs())/2);
+			
 			absSignal[i] = Math.sqrt(Math.pow(y[i].re(), 2) + Math.pow(y[i].im(), 2));
 			if(absSignal[i] > mMaxFFTSample)
 			{
 				mMaxFFTSample = absSignal[i];
 				mPeakPos = i;
 			} 
+			
 		}
 
+		}
+		catch (Exception e){
+			Log.e("asd", "Exception = "+e.getMessage() +", e = "+e);
+			e.printStackTrace();
+		}
+		return ((absSignal[mPeakPos])*bitsPer/3);
 
-		//		return FFT.maxValue.abs()*2;
+//		return mMaxFFTSample*4;
 
-		return absSignal[mPeakPos]*2;
 
 	}
 
