@@ -1,12 +1,8 @@
 package com.agreeya.audiodetectionapp;
 
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -46,7 +42,7 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.activity_main);
 
-		//pool = new ScheduledThreadPoolExecutor(3);
+		// pool = new ScheduledThreadPoolExecutor(3);
 
 		DisplayMetrics displaymetrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
@@ -98,10 +94,7 @@ public class MainActivity extends Activity {
 				}
 				if (shouldUpdateUI) {
 					mMap.addPoint(lineFreq, freqPoint);
-					mMap.addPoint(
-							line,
-							(mHeight / 2)
-									- ((zeroCrossingPoint)));
+					mMap.addPoint(line, (mHeight / 2) - ((zeroCrossingPoint)));
 				}
 			}
 		};
@@ -122,24 +115,23 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
-		//com.agreeya.audiodetectionapp.Log.file();
-		Intent intent = new Intent(this, AudioIntelligenceService.class);
-		stopService(intent);
+		// com.agreeya.audiodetectionapp.Log.file();
+		 Intent intent = new Intent(this, AudioIntelligenceService.class);
+		 stopService(intent);
 		super.onPause();
 	}
 
 	@Override
 	protected void onResume() {
-		Intent intent = new Intent(this, AudioIntelligenceService.class);
-		startService(intent);
+		 Intent intent = new Intent(this, AudioIntelligenceService.class);
+		 startService(intent);
 		super.onResume();
 	}
-	
+
 	@Override
 	public void onDestroy() {
-		//pool.shutdown();
-		//mAudioRecorder.stop();
+		//mAudioRecorder.release();
+		//mPool.shutdown();
 		super.onDestroy();
 	}
 
