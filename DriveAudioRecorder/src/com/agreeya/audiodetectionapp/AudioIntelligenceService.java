@@ -18,7 +18,7 @@ import android.util.Log;
 public class AudioIntelligenceService extends Service {
 
 	private ScheduledThreadPoolExecutor mPool = null;
-	private static int RECORDER_SAMPLERATE = 48000;
+	private static int RECORDER_SAMPLERATE = 8000;
 	private static int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
 	private static int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 	private static AudioRecord mAudioRecorder = null;
@@ -31,7 +31,10 @@ public class AudioIntelligenceService extends Service {
 
 	private AudioChunkReaderRunnable mAudioChunkReaderRunnable = null;
 	// private ZeroCrossingRunnable mZeroCrossingRunnable = null;
-	private HumanFrequencyFFTRunnable mHumanFrequencyFFTRunnable = null;
+	private HumanFrequencyFFTRunnable mHumanFrequencyFFTRunnable1 = null;
+	private HumanFrequencyFFTRunnable mHumanFrequencyFFTRunnable2 = null;
+	private HumanFrequencyFFTRunnable mHumanFrequencyFFTRunnable3 = null;
+	private HumanFrequencyFFTRunnable mHumanFrequencyFFTRunnable4 = null;
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -40,7 +43,7 @@ public class AudioIntelligenceService extends Service {
 
 	@Override
 	public void onCreate() {
-		mPool = new ScheduledThreadPoolExecutor(3);
+		mPool = new ScheduledThreadPoolExecutor(5);
 		ZeroCrossingQueue = new ConcurrentLinkedQueue<AudioChunk>();
 		HumanFrequencyFFTQueue = new ArrayDeque<AudioChunk>();
 
@@ -58,7 +61,10 @@ public class AudioIntelligenceService extends Service {
 
 		mAudioChunkReaderRunnable = new AudioChunkReaderRunnable();
 		// mZeroCrossingRunnable = new ZeroCrossingRunnable();
-		mHumanFrequencyFFTRunnable = new HumanFrequencyFFTRunnable();
+		mHumanFrequencyFFTRunnable1 = new HumanFrequencyFFTRunnable();
+		mHumanFrequencyFFTRunnable2 = new HumanFrequencyFFTRunnable();
+		mHumanFrequencyFFTRunnable3 = new HumanFrequencyFFTRunnable();
+		mHumanFrequencyFFTRunnable4 = new HumanFrequencyFFTRunnable();
 
 		// Start Recording.
 		mAudioRecorder.startRecording();
@@ -66,7 +72,13 @@ public class AudioIntelligenceService extends Service {
 				TimeUnit.MILLISECONDS);
 		// mPool.scheduleAtFixedRate(mZeroCrossingRunnable, 0, 20,
 		// TimeUnit.MILLISECONDS);
-		mPool.scheduleAtFixedRate(mHumanFrequencyFFTRunnable, 0, 10,
+		mPool.scheduleAtFixedRate(mHumanFrequencyFFTRunnable1, 40, 10,
+				TimeUnit.MILLISECONDS);
+		mPool.scheduleAtFixedRate(mHumanFrequencyFFTRunnable2, 40, 10,
+				TimeUnit.MILLISECONDS);
+		mPool.scheduleAtFixedRate(mHumanFrequencyFFTRunnable3, 40, 10,
+				TimeUnit.MILLISECONDS);
+		mPool.scheduleAtFixedRate(mHumanFrequencyFFTRunnable4, 40, 10,
 				TimeUnit.MILLISECONDS);
 
 		super.onCreate();
