@@ -76,6 +76,7 @@ public class MainActivity extends Activity {
 				// Log.d("asd", "Message received with what = "+msg.what);
 
 				boolean shouldUpdateUI = false;
+				//Log.d("asd", "" + System.currentTimeMillis());
 				if (msg.what == MSG_WHAT_ZERO_CROSSING) {
 					// Log.d("asd", "");
 					// mMap.addPoint(lineFreq, msg.arg1);

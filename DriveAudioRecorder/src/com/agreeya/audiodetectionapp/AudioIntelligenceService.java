@@ -1,6 +1,10 @@
 package com.agreeya.audiodetectionapp;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
+import java.util.Date;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -27,6 +31,8 @@ public class AudioIntelligenceService extends Service {
 
 	private ConcurrentLinkedQueue<AudioChunk> ZeroCrossingQueue = null;
 	private ArrayDeque<AudioChunk> HumanFrequencyFFTQueue = null;
+	private ArrayDeque<Double> SpeechDetectorQueue = null;
+	private ArrayDeque<AudioChunk> RecordingBufferQueue = null;
 	// private ConcurrentLinkedQueue<AudioChunk> HumanFrequencyFFTQueue = null;
 
 	private AudioChunkReaderRunnable mAudioChunkReaderRunnable = null;
@@ -35,6 +41,7 @@ public class AudioIntelligenceService extends Service {
 	private HumanFrequencyFFTRunnable mHumanFrequencyFFTRunnable2 = null;
 	private HumanFrequencyFFTRunnable mHumanFrequencyFFTRunnable3 = null;
 	private HumanFrequencyFFTRunnable mHumanFrequencyFFTRunnable4 = null;
+	private SpeechDetectorRunnable mSpeechDetectorRunnable = null;
 
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -46,6 +53,8 @@ public class AudioIntelligenceService extends Service {
 		mPool = new ScheduledThreadPoolExecutor(5);
 		ZeroCrossingQueue = new ConcurrentLinkedQueue<AudioChunk>();
 		HumanFrequencyFFTQueue = new ArrayDeque<AudioChunk>();
+		SpeechDetectorQueue = new ArrayDeque<Double>();
+		RecordingBufferQueue = new ArrayDeque<AudioChunk>();
 
 		// Get the minimum buffer size required for the successful creation of
 		// an AudioRecord object.
@@ -64,7 +73,8 @@ public class AudioIntelligenceService extends Service {
 		mHumanFrequencyFFTRunnable1 = new HumanFrequencyFFTRunnable();
 		mHumanFrequencyFFTRunnable2 = new HumanFrequencyFFTRunnable();
 		mHumanFrequencyFFTRunnable3 = new HumanFrequencyFFTRunnable();
-		mHumanFrequencyFFTRunnable4 = new HumanFrequencyFFTRunnable();
+		// mHumanFrequencyFFTRunnable4 = new HumanFrequencyFFTRunnable();
+		mSpeechDetectorRunnable = new SpeechDetectorRunnable();
 
 		// Start Recording.
 		mAudioRecorder.startRecording();
@@ -78,7 +88,9 @@ public class AudioIntelligenceService extends Service {
 				TimeUnit.MILLISECONDS);
 		mPool.scheduleAtFixedRate(mHumanFrequencyFFTRunnable3, 40, 10,
 				TimeUnit.MILLISECONDS);
-		mPool.scheduleAtFixedRate(mHumanFrequencyFFTRunnable4, 40, 10,
+		/*mPool.scheduleAtFixedRate(mHumanFrequencyFFTRunnable4, 40, 10,
+				TimeUnit.MILLISECONDS);*/
+		mPool.scheduleAtFixedRate(mSpeechDetectorRunnable, 40, 10,
 				TimeUnit.MILLISECONDS);
 
 		super.onCreate();
@@ -105,6 +117,7 @@ public class AudioIntelligenceService extends Service {
 			if (chunk.length == mReadSizeInShort) {
 				// ZeroCrossingQueue.add(chunk);
 				HumanFrequencyFFTQueue.add(chunk);
+				RecordingBufferQueue.add(chunk);
 			}
 		}
 	};
@@ -140,6 +153,96 @@ public class AudioIntelligenceService extends Service {
 			}
 		};*/
 
+	private class SpeechDetectorRunnable implements Runnable {
+		private int LOOKING_FOR_START = 0;
+		private int RECORDING = 1;
+		private int LOOKING_FOR_STOP = 2;
+
+		private double[] SOASignals = new double[5];
+		private long startTime = 0;
+		private int status = LOOKING_FOR_START;
+		private boolean flag = false;
+
+		public boolean StatusOfSpeech(double currentSOAS) {
+			double SOfSOAS = 0;
+			for (int i = 4; i > 0; i--) {
+				SOASignals[i] = SOASignals[i - 1];
+				SOfSOAS = SOfSOAS + SOASignals[i];
+			}
+			SOfSOAS = SOfSOAS + currentSOAS;
+			if (SOfSOAS >= 70)
+				return true;
+			return false;
+		}
+
+		public void saveRecording() {
+			try {
+				Log.d("asd", "Writing to file");
+				String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+						.format(new Date());
+				File f = new File("/storage/sdcard0/Download/" + "Audio_"
+						+ timeStamp + ".wav");
+
+				f.createNewFile();
+				WavAudioFormat waf = new WavAudioFormat(8000, 16, 2, true);
+				WavFileWriter WavWriter = new WavFileWriter(waf, f);
+				int size = RecordingBufferQueue.size();
+				Log.d("asd", "RecordingBufferQueue size =" + size);
+				for (int i = 0; i < size; i++) {
+					AudioChunk chunk = RecordingBufferQueue.poll();
+					WavWriter.write(chunk.data);
+				}
+				Log.d("asd", "File Saved at " + f.getAbsolutePath());
+			} catch (IOException e) {
+				Log.e("asd", "Caught in exception");
+				e.printStackTrace();
+			}
+
+		}
+
+		@Override
+		public void run() {
+
+			Double d = SpeechDetectorQueue.poll();
+			if (d != null) {
+				double sumOfAbsSignal = d.doubleValue();
+				if (status == LOOKING_FOR_START) {
+					if (StatusOfSpeech(sumOfAbsSignal)) {
+						Log.d("asd", "Start Recording");
+						status = RECORDING;
+						flag = true;
+						startTime = System.currentTimeMillis() / 1000;
+					}
+				} else if (status == RECORDING) {
+					if (StatusOfSpeech(sumOfAbsSignal)) {
+						startTime = System.currentTimeMillis() / 1000;
+						Log.d("asd", "Start Time " + startTime);
+					} else {
+						if ((System.currentTimeMillis() / 1000 - startTime) > 5) {
+							status = LOOKING_FOR_STOP;
+						}
+					}
+				} else if (status == LOOKING_FOR_STOP) {
+					if (!StatusOfSpeech(sumOfAbsSignal)) {
+						Log.d("asd", "Stop Recording");
+						status = LOOKING_FOR_START;
+						flag = false;
+						saveRecording();
+						RecordingBufferQueue.clear();
+					}
+				}
+				if (flag) {
+					MainActivity.mainHandler.obtainMessage(1,
+							(int) sumOfAbsSignal, 0).sendToTarget();
+				} else {
+					MainActivity.mainHandler.obtainMessage(1, 0, 0)
+							.sendToTarget();
+					RecordingBufferQueue.poll();
+				}
+			}
+		}
+	};
+
 	private class HumanFrequencyFFTRunnable implements Runnable {
 
 		private Complex[] ComplexSignal = null;
@@ -168,9 +271,9 @@ public class AudioIntelligenceService extends Service {
 
 					sumOfAbsSignal = sumOfAbsSignal + fftSpectrum[i].abs();
 				}
-				//Log.d("asd", "FFT : " + sumOfAbsSignal / i);
-				MainActivity.mainHandler.obtainMessage(1, (int) (sumOfAbsSignal / i) / 1000,
-						0).sendToTarget();
+				SpeechDetectorQueue.add(Double.valueOf(sumOfAbsSignal / i
+						/ 1000));
+				// Log.d("asd", "FFT : " + sumOfAbsSignal / i);
 			}
 		}
 	};
