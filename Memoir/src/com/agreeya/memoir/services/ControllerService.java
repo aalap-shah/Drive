@@ -21,14 +21,14 @@ public class ControllerService extends Service {
 		// TODO Auto-generated method stub
 		super.onCreate();
 		Log.v("Memoir", "Controller Serivce Created");
-		int funcMemoir = new Random().nextInt(3);
+		int funcMemoir = new Random().nextInt(4);
 		int cameraType = new Random().nextInt(2);
 		int photoType = new Random().nextInt(2);
 		switch (funcMemoir) {
 		case 0:
 			mIntent = new Intent(this.getApplicationContext(),
 					SilentPhotoShot.class);
-			mIntent.putExtra(CAMERA, camera[cameraType]);
+			mIntent.putExtra(CAMERA, 1);
 			mIntent.putExtra(PHOTO, shotmode[photoType]);
 			Log.v("Memoir", "Starting photoshot");
 			startService(mIntent);

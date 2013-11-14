@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -168,11 +169,18 @@ public class VideoRecorder extends Service {
 		Time t = new Time(System.currentTimeMillis());
 		dTime = t.getTime();
 
-		File videoFile = new File(getApplicationContext().getFilesDir()
-				.getAbsolutePath() + "/videos");
+		File videoFile = new File(Environment.getExternalStorageDirectory()
+				.getPath(),"MemoirRepo");
 		if (!videoFile.exists()) {
 			videoFile.mkdir();
 		}
+
+		videoFile = new File(Environment.getExternalStorageDirectory()
+				.getPath() + "/MemoirRepo","videos");
+		if (!videoFile.exists()) {
+			videoFile.mkdir();
+		}
+
 		mFilePath = videoFile + "/video" + mVideoNumber++ + ".mp4";
 		try {
 			// Camera setup is based on the API Camera Preview demo

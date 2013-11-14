@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
@@ -179,11 +180,18 @@ public class AudioRecorder extends Service {
 				Time t = new Time(System.currentTimeMillis());
 				double dTime = t.getTime();
 				
-				File audioFile = new File(getApplicationContext().getFilesDir()
-						.getAbsolutePath() + "/audios");
+				File audioFile = new File(Environment.getExternalStorageDirectory()
+						.getPath(),"MemoirRepo");
 				if (!audioFile.exists()) {
 					audioFile.mkdir();
 				}
+
+				audioFile = new File(Environment.getExternalStorageDirectory()
+						.getPath() + "/MemoirRepo","audios");
+				if (!audioFile.exists()) {
+					audioFile.mkdir();
+				}
+
 				mAudioPath = audioFile + "/audio" + mAudioNumber + ".wav";
 				mAudioMp3Path = audioFile + "/audio" + mAudioNumber++ + ".mp3";
 				

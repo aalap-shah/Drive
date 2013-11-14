@@ -25,6 +25,7 @@ public final class R {
         public static final int frame=0x7f020001;
         public static final int ic_launcher=0x7f020002;
         public static final int picture_frame=0x7f020003;
+        public static final int rsz_logo=0x7f020004;
     }
     public static final class id {
         public static final int Container=0x7f080000;
@@ -32,7 +33,8 @@ public final class R {
         public static final int PhotoIV=0x7f080004;
         public static final int PlayIV=0x7f080002;
         public static final int ProgressSB=0x7f080003;
-        public static final int action_settings=0x7f080005;
+        public static final int VideoIV=0x7f080005;
+        public static final int action_settings=0x7f080006;
     }
     public static final class layout {
         public static final int activity_drive=0x7f030000;
@@ -40,6 +42,7 @@ public final class R {
         public static final int drive_line_item_album=0x7f030002;
         public static final int drive_line_item_audio=0x7f030003;
         public static final int drive_line_item_photo=0x7f030004;
+        public static final int drive_line_item_video=0x7f030005;
     }
     public static final class menu {
         public static final int drive=0x7f070000;

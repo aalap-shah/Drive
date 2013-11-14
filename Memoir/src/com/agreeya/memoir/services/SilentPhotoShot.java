@@ -205,6 +205,7 @@ public class SilentPhotoShot extends Service {
 				resized.compress(CompressFormat.JPEG, 90, tfos);
 				tfos.close();
 				bitmap.recycle();
+				resized.recycle();
 				rImg.recycle();
 				System.gc();
 

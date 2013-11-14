@@ -17,6 +17,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,7 +28,9 @@ import android.view.Window;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.MediaController;
 import android.widget.RelativeLayout;
+import android.widget.VideoView;
 
 public class DriveActivity extends Activity {
 
@@ -68,27 +71,38 @@ public class DriveActivity extends Activity {
 		gC = (gC % bytes.length);
 		bC = (bC % bytes.length);
 		Log.d("asd", "rC " + rC + " gC" + gC + " bC = " + bC);
-		
+
 		int color = ((rC << 16) & 0xFF0000) | ((gC << 8) & 0x00FF00)
 				| (bC & 0x0000FF);
 
 		mDriveElements = new ArrayList<Element>();
 		mDriveElements.add(new AudioElement("/storage/sdcard0/audiomp3.mp3"));
-		mDriveElements.add(new PhotoElement("/storage/sdcard0/MemoirRepo/thumbimages/image1.jpg"));
+		mDriveElements.add(new VideoElement(
+				"/storage/sdcard0/MemoirRepo/videos/video1.mp4"));
+		mDriveElements.add(new AudioElement("/storage/sdcard0/audiomp3.mp3"));
+		mDriveElements.add(new PhotoElement(
+				"/storage/sdcard0/MemoirRepo/thumbimages/image1.jpg"));
 		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement("/storage/sdcard0/2.jpeg"));
+		mDriveElements.add(new PhotoElement(
+				"/storage/sdcard0/MemoirRepo/thumbimages/image1.jpg"));
 		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement("/storage/sdcard0/3.jpeg"));
+		mDriveElements.add(new PhotoElement(
+				"/storage/sdcard0/MemoirRepo/thumbimages/image2.jpg"));
 		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement("/storage/sdcard0/MemoirRepo/thumbimages/image4.jpg"));
+		mDriveElements.add(new PhotoElement(
+				"/storage/sdcard0/MemoirRepo/thumbimages/image2.jpg"));
 		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement("/storage/sdcard0/4.jpg"));
+		mDriveElements.add(new PhotoElement(
+				"/storage/sdcard0/MemoirRepo/thumbimages/image3.jpg"));
 		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement("/storage/sdcard0/MemoirRepo/thumbimages/image4.jpg"));
+		mDriveElements.add(new PhotoElement(
+				"/storage/sdcard0/MemoirRepo/thumbimages/image4.jpg"));
 		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement("/storage/sdcard0/4.jpg"));
+		mDriveElements.add(new PhotoElement(
+				"/storage/sdcard0/MemoirRepo/thumbimages/image4.jpg"));
 		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement("/storage/sdcard0/MemoirRepo/thumbimages/image4.jpg"));
+		mDriveElements.add(new PhotoElement(
+				"/storage/sdcard0/MemoirRepo/thumbimages/image5.jpg"));
 		mDriveElements.add(new AudioElement(null));
 
 		mDriveView = (ListView) findViewById(R.id.DriveView);
@@ -155,6 +169,7 @@ public class DriveActivity extends Activity {
 		private class ViewHolder {
 			int type = -1;
 			ImageView iv = null;
+			VideoView vv = null;
 		}
 
 		public DriveAdapter(Context context, ArrayList<Element> elements,
@@ -170,6 +185,7 @@ public class DriveActivity extends Activity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ViewHolder vh = null;
 			Element element = mElements.get(position);
+
 			if (convertView == null) {
 				vh = new ViewHolder();
 				vh.type = element.type;
@@ -180,6 +196,10 @@ public class DriveActivity extends Activity {
 				} else if (element.type == Element.TYPE_AUDIO) {
 					convertView = mLayoutInflater.inflate(
 							R.layout.drive_line_item_audio, null);
+				} else if (element.type == Element.TYPE_VIDEO) {
+					convertView = mLayoutInflater.inflate(
+							R.layout.drive_line_item_video, null);
+					vh.vv = (VideoView) convertView.findViewById(R.id.VideoIV);
 				}
 				convertView.setTag(vh);
 			} else {
@@ -194,6 +214,11 @@ public class DriveActivity extends Activity {
 					} else if (element.type == Element.TYPE_AUDIO) {
 						convertView = mLayoutInflater.inflate(
 								R.layout.drive_line_item_audio, null);
+					} else if (element.type == Element.TYPE_VIDEO) {
+						convertView = mLayoutInflater.inflate(
+								R.layout.drive_line_item_video, null);
+						vh.vv = (VideoView) convertView
+								.findViewById(R.id.VideoIV);
 					}
 				}
 				convertView.setTag(vh);
@@ -207,6 +232,15 @@ public class DriveActivity extends Activity {
 				PhotoElement pe = (PhotoElement) element;
 				vh.iv.setImageBitmap(BitmapFactory.decodeFile(pe.path));
 				vh.iv.setAlpha(1f);
+			}
+
+			if (element.type == Element.TYPE_VIDEO) {
+				VideoElement ve = (VideoElement) element;
+				Uri video = Uri.parse(ve.path);
+				vh.vv.setVideoURI(video);
+			    vh.vv.setMediaController(new MediaController(this.mContext));
+			    //video_view.setMediaController(media_control);
+			    vh.vv.requestFocus();
 			}
 			
 			return convertView;
