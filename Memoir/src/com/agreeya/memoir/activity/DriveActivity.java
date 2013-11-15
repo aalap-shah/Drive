@@ -2,13 +2,15 @@ package com.agreeya.memoir.activity;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-
-import com.agreeya.memoir.R;
+import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -17,6 +19,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,17 +29,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.VideoView;
+
+import com.agreeya.memoir.R;
+import com.agreeya.memoir.services.ControllerService;
+import com.agreeya.memoir.sqlitedatabase.DataSource;
+import com.agreeya.memoir.sqlitedatabase.PathRepo;
 
 public class DriveActivity extends Activity {
 
 	private ListView mDriveView = null;
 	private DriveAdapter mDriveAdapter = null;
 	private ArrayList<Element> mDriveElements = null;
+	private DataSource datasource;
+	private PathRepo path;
+	private Intent mIntent;
 
 	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
@@ -45,9 +58,12 @@ public class DriveActivity extends Activity {
 		super.onCreate(savedInstanceState);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		// getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-		// WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+		datasource = new DataSource(this);
+		datasource.open();
+		mIntent = new Intent(this,ControllerService.class);
+		startService(mIntent);
+		List<PathRepo> values = datasource.getAllPaths();
 		setContentView(R.layout.activity_drive);
 		RelativeLayout Container = (RelativeLayout) findViewById(R.id.Container);
 		// TODO : API check
@@ -76,34 +92,24 @@ public class DriveActivity extends Activity {
 				| (bC & 0x0000FF);
 
 		mDriveElements = new ArrayList<Element>();
-		mDriveElements.add(new AudioElement("/storage/sdcard0/audiomp3.mp3"));
-		mDriveElements.add(new VideoElement(
-				"/storage/sdcard0/MemoirRepo/videos/video1.mp4"));
-		mDriveElements.add(new AudioElement("/storage/sdcard0/audiomp3.mp3"));
-		mDriveElements.add(new PhotoElement(
-				"/storage/sdcard0/MemoirRepo/thumbimages/image1.jpg"));
-		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement(
-				"/storage/sdcard0/MemoirRepo/thumbimages/image1.jpg"));
-		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement(
-				"/storage/sdcard0/MemoirRepo/thumbimages/image2.jpg"));
-		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement(
-				"/storage/sdcard0/MemoirRepo/thumbimages/image2.jpg"));
-		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement(
-				"/storage/sdcard0/MemoirRepo/thumbimages/image3.jpg"));
-		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement(
-				"/storage/sdcard0/MemoirRepo/thumbimages/image4.jpg"));
-		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement(
-				"/storage/sdcard0/MemoirRepo/thumbimages/image4.jpg"));
-		mDriveElements.add(new AudioElement(null));
-		mDriveElements.add(new PhotoElement(
-				"/storage/sdcard0/MemoirRepo/thumbimages/image5.jpg"));
-		mDriveElements.add(new AudioElement(null));
+		Log.v("asd list",":"+values.size());
+		for(int i=0;i<values.size();i++){
+			path=values.get(i);
+			Log.v("asd adding",path.getType());
+			if(path.getType().equalsIgnoreCase("audio")){
+				Log.v("asd audio",path.getPath());
+				mDriveElements.add(new AudioElement(path.getPath()));
+			}
+			if(path.getType().equalsIgnoreCase("video")){
+				Log.v("asd audio",path.getPath());
+				mDriveElements.add(new VideoElement(path.getPath()));
+			}
+			if(path.getType().equalsIgnoreCase("single") || path.getType().equalsIgnoreCase("multishot")){
+				Log.v("asd audio",path.getPath());
+				mDriveElements.add(new PhotoElement(path.getPath()));
+			}
+		}
+		
 
 		mDriveView = (ListView) findViewById(R.id.DriveView);
 		mDriveAdapter = new DriveAdapter(this, mDriveElements, color);
@@ -170,6 +176,9 @@ public class DriveActivity extends Activity {
 			int type = -1;
 			ImageView iv = null;
 			VideoView vv = null;
+			public SeekBar seek_bar = null;
+			public ImageButton play_button;
+			public ImageButton pause_button;
 		}
 
 		public DriveAdapter(Context context, ArrayList<Element> elements,
@@ -185,7 +194,6 @@ public class DriveActivity extends Activity {
 		public View getView(int position, View convertView, ViewGroup parent) {
 			ViewHolder vh = null;
 			Element element = mElements.get(position);
-
 			if (convertView == null) {
 				vh = new ViewHolder();
 				vh.type = element.type;
@@ -196,6 +204,10 @@ public class DriveActivity extends Activity {
 				} else if (element.type == Element.TYPE_AUDIO) {
 					convertView = mLayoutInflater.inflate(
 							R.layout.drive_line_item_audio, null);
+					vh.play_button = (ImageButton) findViewById(R.id.PlayIV);
+					vh.pause_button =(ImageButton) findViewById(R.id.PlayIV); 
+					vh.seek_bar = (SeekBar) findViewById(R.id.ProgressSB);
+
 				} else if (element.type == Element.TYPE_VIDEO) {
 					convertView = mLayoutInflater.inflate(
 							R.layout.drive_line_item_video, null);
@@ -214,6 +226,11 @@ public class DriveActivity extends Activity {
 					} else if (element.type == Element.TYPE_AUDIO) {
 						convertView = mLayoutInflater.inflate(
 								R.layout.drive_line_item_audio, null);
+
+						vh.play_button = (ImageButton) findViewById(R.id.PlayIV);
+						vh.pause_button =(ImageButton) findViewById(R.id.PlayIV); 
+						vh.seek_bar = (SeekBar) findViewById(R.id.ProgressSB);
+
 					} else if (element.type == Element.TYPE_VIDEO) {
 						convertView = mLayoutInflater.inflate(
 								R.layout.drive_line_item_video, null);
@@ -232,17 +249,41 @@ public class DriveActivity extends Activity {
 				PhotoElement pe = (PhotoElement) element;
 				vh.iv.setImageBitmap(BitmapFactory.decodeFile(pe.path));
 				vh.iv.setAlpha(1f);
+				
 			}
 
 			if (element.type == Element.TYPE_VIDEO) {
 				VideoElement ve = (VideoElement) element;
 				Uri video = Uri.parse(ve.path);
 				vh.vv.setVideoURI(video);
-			    vh.vv.setMediaController(new MediaController(this.mContext));
-			    //video_view.setMediaController(media_control);
-			    vh.vv.requestFocus();
+				vh.vv.setMediaController(new MediaController(this.mContext));
+				vh.vv.requestFocus();
 			}
-			
+
+			if (element.type == Element.TYPE_AUDIO) {
+				AudioElement ae = (AudioElement)element;
+				Uri audio = Uri.parse(ae.path);
+				final MediaPlayer player = MediaPlayer.create(mContext, audio);
+				vh.play_button.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						// TODO Auto-generated method stub
+							player.start();
+//							vh.play_button.setVisibility(View.GONE);
+					}
+				});
+
+//				vh.pause_button.setOnClickListener(new View.OnClickListener() {
+//
+//					@Override
+//					public void onClick(View v) {
+//						// TODO Auto-generated method stub
+//							player.pause();
+//							vh.play_button.setVisibility(View.GONE);
+//					}
+//				});
+			}
 			return convertView;
 		}
 
@@ -260,5 +301,12 @@ public class DriveActivity extends Activity {
 		public long getItemId(int position) {
 			return position;
 		}
+
+	}
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+	    super.onConfigurationChanged(newConfig);
+	    setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 	}
 }

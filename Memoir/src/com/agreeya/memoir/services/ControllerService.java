@@ -2,7 +2,13 @@ package com.agreeya.memoir.services;
 
 import java.util.Random;
 
+import com.agreeya.memoir.receivers.AlarmReceiver;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
@@ -15,6 +21,7 @@ public class ControllerService extends Service {
 	private Intent mIntent;
 	private String CAMERA = "camera";
 	private String PHOTO = "photo";
+	private AlarmReceiver mAlarmReceiver;
 
 	@Override
 	public void onCreate() {
@@ -25,6 +32,7 @@ public class ControllerService extends Service {
 		int cameraType = new Random().nextInt(2);
 		int photoType = new Random().nextInt(2);
 		switch (funcMemoir) {
+
 		case 0:
 			mIntent = new Intent(this.getApplicationContext(),
 					SilentPhotoShot.class);
@@ -37,20 +45,25 @@ public class ControllerService extends Service {
 		case 1:
 			mIntent = new Intent(this.getApplicationContext(),
 					VideoRecorder.class);
-			mIntent.putExtra(CAMERA, camera[cameraType]);
+			mIntent.putExtra(CAMERA, 1);
 			Log.v("Memoir", "Starting Video Recording ");
-			//startService(mIntent);
+			startService(mIntent);
 			break;
 
 		case 2:
 			mIntent = new Intent(this.getApplicationContext(),
 					AudioRecorder.class);
 			Log.v("Memoir", "Starting Audio Recording");
-			//startService(mIntent);
+			startService(mIntent);
 			break;
 
 		case 3:
-			Toast.makeText(this.getApplicationContext(), "Stopping Controller Service", Toast.LENGTH_LONG).show();
+			Intent intentAlarm = new Intent(this, AlarmReceiver.class);
+			AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+			alarmManager.cancel(PendingIntent.getBroadcast(this, 1,
+					intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+			Toast.makeText(this.getApplicationContext(),
+					"Stopping Controller Service", Toast.LENGTH_LONG).show();
 			break;
 		default:
 			Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG)
@@ -64,5 +77,5 @@ public class ControllerService extends Service {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 }
