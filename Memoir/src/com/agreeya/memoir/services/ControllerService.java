@@ -2,17 +2,16 @@ package com.agreeya.memoir.services;
 
 import java.util.Random;
 
-import com.agreeya.memoir.receivers.AlarmReceiver;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.agreeya.memoir.receivers.AlarmReceiver;
 
 public class ControllerService extends Service {
 
@@ -21,14 +20,13 @@ public class ControllerService extends Service {
 	private Intent mIntent;
 	private String CAMERA = "camera";
 	private String PHOTO = "photo";
-	private AlarmReceiver mAlarmReceiver;
 
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
 		Log.v("Memoir", "Controller Serivce Created");
-		int funcMemoir = new Random().nextInt(4);
+		int funcMemoir = new Random().nextInt(3);
 		int cameraType = new Random().nextInt(2);
 		int photoType = new Random().nextInt(2);
 		switch (funcMemoir) {
@@ -39,7 +37,7 @@ public class ControllerService extends Service {
 			mIntent.putExtra(CAMERA, 1);
 			mIntent.putExtra(PHOTO, shotmode[photoType]);
 			Log.v("Memoir", "Starting photoshot");
-			startService(mIntent);
+			//startService(mIntent);
 			break;
 
 		case 1:
@@ -57,14 +55,15 @@ public class ControllerService extends Service {
 			startService(mIntent);
 			break;
 
-		case 3:
-			Intent intentAlarm = new Intent(this, AlarmReceiver.class);
-			AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-			alarmManager.cancel(PendingIntent.getBroadcast(this, 1,
-					intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
-			Toast.makeText(this.getApplicationContext(),
-					"Stopping Controller Service", Toast.LENGTH_LONG).show();
-			break;
+		// case 3:
+		// Intent intentAlarm = new Intent(this, AlarmReceiver.class);
+		// AlarmManager alarmManager = (AlarmManager)
+		// getSystemService(Context.ALARM_SERVICE);
+		// alarmManager.cancel(PendingIntent.getBroadcast(this, 1,
+		// intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+		// Toast.makeText(this.getApplicationContext(),
+		// "Stopping Controller Service", Toast.LENGTH_LONG).show();
+		// break;
 		default:
 			Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG)
 					.show();
@@ -76,6 +75,16 @@ public class ControllerService extends Service {
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+//		Intent intentAlarm = new Intent(this, AlarmReceiver.class);
+//		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//		alarmManager.cancel(PendingIntent.getBroadcast(this, 1, intentAlarm,
+//				PendingIntent.FLAG_UPDATE_CURRENT));
+		super.onDestroy();
 	}
 
 }

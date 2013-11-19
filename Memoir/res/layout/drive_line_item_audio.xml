@@ -4,7 +4,7 @@
     android:layout_height="80dp"
     android:padding="5dp" >
 
-    <ImageButton
+    <ImageView
         android:id="@+id/PlayIV"
         android:layout_width="45dp"
         android:layout_height="45dp"
@@ -12,13 +12,15 @@
         android:layout_centerVertical="true"
         android:src="@android:drawable/ic_media_play" />
 
-    <ImageButton
-        android:id="@+id/PauseIV"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:src="@android:drawable/ic_media_pause" />
+<!--     <ImageView -->
+<!--         android:id="@+id/PauseIV" -->
+<!--         android:layout_width="45dp" -->
+<!--         android:layout_height="45dp" -->
+<!--         android:layout_centerVertical="true" -->
+<!--         android:layout_toRightOf="@+id/PlayIV" -->
+<!--         android:src="@android:drawable/ic_media_pause" -->
+<!--         /> -->
+<!--      android:visibility="invisible" -->
 
     <SeekBar
         android:id="@+id/ProgressSB"

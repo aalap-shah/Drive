@@ -3,6 +3,10 @@
 
     <string name="app_name">Drive</string>
     <string name="action_settings">Settings</string>
+    <string name="action_start_trip">Start Trip</string>
+    <string name="action_stop_trip">Stop Trip</string>
     <string name="hello_world">Hello world!</string>
 
+    <string name="PlayPauseKey">PlayPauseKey</string>
+    <string name="Seek_Bar">Seek_Bar</string>
 </resources>

@@ -2,8 +2,6 @@ package com.agreeya.memoir.sqlitedatabase;
 
 import java.sql.Time;
 
-import com.agreeya.memoir.receivers.AlarmReceiver;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -13,25 +11,27 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-public class InsertIntoDB extends Service{
+import com.agreeya.memoir.receivers.AlarmReceiver;
+
+public class InsertIntoDB extends Service {
 
 	private String LOCATION = "location";
 	private String TYPE = "type";
 	private String TIME = "time";
-    private String mLocation;
-    private String mType;
-    private double mTime;
-	private DataSource datasource;
+	private String mLocation;
+	private String mType;
+	private double mTime;
+	// private DataSource datasource;
 	PathRepo pathObj = null;
-	
+
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
-		
-		Log.v("DB","onCreate");
+
+		Log.v("DB", "onCreate");
 		super.onCreate();
-		datasource = new DataSource(this.getApplicationContext());
-		datasource.open();
+		// datasource = new DataSource(this.getApplicationContext(),null);
+		DataSource.open();
 	}
 
 	@Override
@@ -40,10 +40,11 @@ public class InsertIntoDB extends Service{
 		mLocation = intent.getStringExtra(LOCATION);
 		mType = intent.getStringExtra(TYPE);
 		mTime = intent.getDoubleExtra(TIME, 000);
-		Log.v("DB Storing"," location : " + mLocation);
-		Log.v("DB Storing"," type : "+ mType);
-		Log.v("DB Storing"," time : "+mTime);
-		pathObj = datasource.createPath(mType,mLocation,mTime);
+		Log.v("DB Storing", " location : " + mLocation);
+		Log.v("DB Storing", " type : " + mType);
+		Log.v("DB Storing", " time : " + mTime);
+		// pathObj =
+		DataSource.createPath(mType, mLocation, mTime);
 		scheduleAlarm();
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -52,6 +53,16 @@ public class InsertIntoDB extends Service{
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+//		Intent intentAlarm = new Intent(this, AlarmReceiver.class);
+//		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//		alarmManager.cancel(PendingIntent.getBroadcast(this, 1, intentAlarm,
+//				PendingIntent.FLAG_UPDATE_CURRENT));
+		super.onDestroy();
 	}
 
 	public void scheduleAlarm() {
