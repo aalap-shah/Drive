@@ -2,6 +2,8 @@ package com.agreeya.memoir.services;
 
 import java.io.File;
 import java.sql.Time;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -164,12 +166,13 @@ public class VideoRecorder extends Service {
 		}
 	}
 
-	@SuppressLint("NewApi")
+	@SuppressLint({ "NewApi", "SimpleDateFormat" })
 	private void beginRecording(SurfaceHolder holder) throws Exception {
 
 		Time t = new Time(System.currentTimeMillis());
 		dTime = t.getTime();
-
+		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+		.format(new Date());
 		File videoFile = new File(Environment.getExternalStorageDirectory()
 				.getPath(),"MemoirRepo");
 		if (!videoFile.exists()) {
@@ -182,7 +185,8 @@ public class VideoRecorder extends Service {
 			videoFile.mkdir();
 		}
 
-		mFilePath = videoFile + "/video" + mVideoNumber++ + ".mp4";
+		mFilePath = videoFile + "/video_" + timeStamp + ".mp4";
+//		mFilePath = videoFile + "/video" + mVideoNumber++ + ".mp4";
 		try {
 			// Camera setup is based on the API Camera Preview demo
 			// mCamera.setPreviewDisplay(holder);

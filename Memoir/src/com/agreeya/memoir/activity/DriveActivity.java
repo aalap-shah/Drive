@@ -227,7 +227,7 @@ public class DriveActivity extends Activity {
 			fg.setGradientType(GradientDrawable.LINEAR_GRADIENT);
 			int color1 = ((color & 0x00FFFFFF) | 0x88000000);
 			int color2 = ((color & 0x00FFFFFF) | 0xAA000000);
-			fg.setColors(new int[] { color1, 0x00FFFFFF, color2 });
+			fg.setColors(new int[] { color1, color & 0x00FFFFFF, color2 });
 
 			/*GradientDrawable bg = new GradientDrawable();
 			bg.setShape(GradientDrawable.RECTANGLE);
@@ -303,7 +303,6 @@ public class DriveActivity extends Activity {
 
 			if (convertView == null) {
 				vh = new ViewHolder();
-				Log.v("type", "" + vh.type);
 				if (element.type == Element.TYPE_PHOTO) {
 					convertView = mLayoutInflater.inflate(
 							R.layout.drive_line_item_photo, null);

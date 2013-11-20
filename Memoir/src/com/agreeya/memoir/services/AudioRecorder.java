@@ -3,7 +3,9 @@ package com.agreeya.memoir.services;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Time;
+import java.text.SimpleDateFormat;
 import java.util.ArrayDeque;
+import java.util.Date;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -40,7 +42,7 @@ public class AudioRecorder extends Service {
 	private static AudioRecord mAudioRecorder = null;
 	private static int mBufferSizeInBytes = 0;
 	private static int mReadSizeInShort = 1024;
-	private static int mAudioNumber = 1;
+//	private static int mAudioNumber = 1;
 	private String LOCATION = "location";
 	private String TYPE = "type";
 	private String TIME = "time";
@@ -179,6 +181,8 @@ public class AudioRecorder extends Service {
 				
 				Time t = new Time(System.currentTimeMillis());
 				double dTime = t.getTime();
+				String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+				.format(new Date());
 				
 				File audioFile = new File(Environment.getExternalStorageDirectory()
 						.getPath(),"MemoirRepo");
@@ -192,8 +196,11 @@ public class AudioRecorder extends Service {
 					audioFile.mkdir();
 				}
 
-				mAudioPath = audioFile + "/audio" + mAudioNumber + ".wav";
-				mAudioMp3Path = audioFile + "/audio" + mAudioNumber++ + ".mp3";
+//				mAudioPath = audioFile + "/audio" + mAudioNumber + ".wav";
+//				mAudioMp3Path = audioFile + "/audio" + mAudioNumber++ + ".mp3";
+				
+				mAudioPath = audioFile + "/audio_" + timeStamp + ".wav";
+				mAudioMp3Path = audioFile + "/audio_" + timeStamp + ".mp3";
 				
 				File f = new File(mAudioPath);
 				f.createNewFile();

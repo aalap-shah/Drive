@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Time;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -142,12 +144,16 @@ public class SilentPhotoShot extends Service {
 		private String mRotatedFile;
 		private String mThumbnail;
 
+		@SuppressLint("SimpleDateFormat")
 		@Override
 		public void onPictureTaken(byte[] data, Camera camera) {
 
 			Time t = new Time(System.currentTimeMillis());
 			double dTime = t.getTime();
-			Log.v("asd", "image taken " + data.length + "\nat time : " + dTime);
+			String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+			.format(new Date());
+			
+			Log.v("asd", "image taken " + data.length + "\nat time : " + timeStamp);
 			Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 			Log.v("asd", "1");
 			Matrix rotateRight = new Matrix();
@@ -193,18 +199,27 @@ public class SilentPhotoShot extends Service {
 			if (!thumbFile.exists()) {
 				thumbFile.mkdir();
 			}
-			mThumbnail = thumbFile + "/image" + mImageNumber + ".jpg";
+			mThumbnail = thumbFile + "/image_" + timeStamp + ".jpg";
+//			mThumbnail = thumbFile + "/image" + mImageNumber + ".jpg";
 			try {
 				Log.v("asd", "saving image");
+//				if (camera_type == 1)
+//					mFilePath = pictureFile + "/image" + mImageNumber + ".jpg";
+//				else {
+//					mFilePath = pictureFile + "/imagetmp" + mImageNumber
+//							+ ".jpg";
+//					mRotatedFile = pictureFile + "/image" + mImageNumber
+//							+ ".jpg";
+//				}
+//				mImageNumber++;
 				if (camera_type == 1)
-					mFilePath = pictureFile + "/image" + mImageNumber + ".jpg";
+					mFilePath = pictureFile + "/image_" + timeStamp + ".jpg";
 				else {
-					mFilePath = pictureFile + "/imagetmp" + mImageNumber
+					mFilePath = pictureFile + "/imagetmp_" + timeStamp
 							+ ".jpg";
-					mRotatedFile = pictureFile + "/image" + mImageNumber
+					mRotatedFile = pictureFile + "/image_" + timeStamp
 							+ ".jpg";
 				}
-				mImageNumber++;
 				FileOutputStream fos = new FileOutputStream(mFilePath);
 				rImg.compress(CompressFormat.JPEG, 90, fos);
 				fos.close();
