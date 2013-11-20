@@ -4,8 +4,6 @@ import java.io.File;
 import java.sql.Time;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -23,7 +21,6 @@ import android.view.WindowManager;
 import android.view.WindowManager.BadTokenException;
 import android.widget.Toast;
 
-import com.agreeya.memoir.receivers.AlarmReceiver;
 import com.agreeya.memoir.sqlitedatabase.InsertIntoDB;
 
 public class VideoRecorder extends Service {
@@ -84,11 +81,7 @@ public class VideoRecorder extends Service {
 			Log.e("asd", e.toString());
 			e.printStackTrace();
 		}
-		
-//		Intent intentAlarm = new Intent(this, AlarmReceiver.class);
-//		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//		alarmManager.cancel(PendingIntent.getBroadcast(this, 1,
-//				intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+
 		super.onDestroy();
 	}
 

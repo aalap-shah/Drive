@@ -8,10 +8,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -21,7 +18,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.agreeya.memoir.receivers.AlarmReceiver;
 import com.agreeya.memoir.sqlitedatabase.InsertIntoDB;
 import com.agreeya.memoir.util.AudioChunk;
 import com.agreeya.memoir.util.Complex;
