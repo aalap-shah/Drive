@@ -23,8 +23,6 @@ import android.view.WindowManager;
 import android.view.WindowManager.BadTokenException;
 import android.widget.Toast;
 
-import com.agreeya.memoir.sqlitedatabase.InsertIntoDB;
-
 public class VideoRecorder extends Service {
 
 	private String LOCATION = "location";
@@ -156,13 +154,6 @@ public class VideoRecorder extends Service {
 		public void surfaceChanged(SurfaceHolder holder, int format, int w,
 				int h) {
 			Log.v("asd", "camera preview surface change");
-			// try {
-			// beginRecording(holder);
-			// } catch (Exception e) {
-			// Log.e("asd", e.toString());
-			// e.printStackTrace();
-			// }
-
 		}
 	}
 
@@ -186,10 +177,9 @@ public class VideoRecorder extends Service {
 		}
 
 		mFilePath = videoFile + "/video_" + timeStamp + ".mp4";
-//		mFilePath = videoFile + "/video" + mVideoNumber++ + ".mp4";
 		try {
 			// Camera setup is based on the API Camera Preview demo
-			// mCamera.setPreviewDisplay(holder);
+
 			Camera.Parameters parameters = mCamera.getParameters();
 			parameters.setPreviewSize(640, 480);
 			mCamera.setParameters(parameters);

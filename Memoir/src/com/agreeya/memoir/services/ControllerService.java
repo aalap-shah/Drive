@@ -26,11 +26,10 @@ public class ControllerService extends Service {
 		int photoType = new Random().nextInt(2);
 		switch (funcMemoir) {
 
-
 		case 0:
 			mIntent = new Intent(this.getApplicationContext(),
 					VideoRecorder.class);
-			mIntent.putExtra(CAMERA, camera[1]);
+			mIntent.putExtra(CAMERA, camera[cameraType]);
 			Log.v("Memoir", "Starting Video Recording ");
 			startService(mIntent);
 			break;
@@ -41,11 +40,11 @@ public class ControllerService extends Service {
 			Log.v("Memoir", "Starting Audio Recording");
 			startService(mIntent);
 			break;
-			
+
 		case 2:
 			mIntent = new Intent(this.getApplicationContext(),
 					SilentPhotoShot.class);
-			mIntent.putExtra(CAMERA, camera[1]);
+			mIntent.putExtra(CAMERA, camera[cameraType]);
 			mIntent.putExtra(PHOTO, shotmode[photoType]);
 			Log.v("Memoir", "Starting photoshot");
 			startService(mIntent);

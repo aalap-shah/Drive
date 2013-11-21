@@ -142,6 +142,11 @@ public class FFMpegService extends IntentService {
 				}
 			}
 		});
+		
+		File file = new File(photoPath);
+		if(file.exists()){
+			file.delete();
+		}
 
 	}
 

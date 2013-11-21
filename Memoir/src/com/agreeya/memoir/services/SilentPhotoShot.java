@@ -31,8 +31,6 @@ import android.view.WindowManager;
 import android.view.WindowManager.BadTokenException;
 import android.widget.Toast;
 
-import com.agreeya.memoir.sqlitedatabase.InsertIntoDB;
-
 public class SilentPhotoShot extends Service {
 
 	private String LOCATION = "location";
@@ -49,6 +47,8 @@ public class SilentPhotoShot extends Service {
 	private Intent mIntentFFmpeg;
 	private String PHOTO_PATH = "photo_path";
 	private String OUTPUT_PHOTO_PATH = "output_photo_path";
+	private String SINGLE = "single";
+	private String MULTISHOT = "multishot";
 
 	@Override
 	public void onCreate() {
@@ -97,12 +97,12 @@ public class SilentPhotoShot extends Service {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
-		
+
 	}
 
 	private void releaseCamera() {
@@ -143,6 +143,7 @@ public class SilentPhotoShot extends Service {
 
 		private String mRotatedFile;
 		private String mThumbnail;
+		private String mThumbnailRotate;
 
 		@SuppressLint("SimpleDateFormat")
 		@Override
@@ -151,9 +152,10 @@ public class SilentPhotoShot extends Service {
 			Time t = new Time(System.currentTimeMillis());
 			double dTime = t.getTime();
 			String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
-			.format(new Date());
-			
-			Log.v("asd", "image taken " + data.length + "\nat time : " + timeStamp);
+					.format(new Date());
+
+			Log.v("asd", "image taken " + data.length + "\nat time : "
+					+ timeStamp);
 			Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
 			Log.v("asd", "1");
 			Matrix rotateRight = new Matrix();
@@ -182,44 +184,36 @@ public class SilentPhotoShot extends Service {
 			Bitmap resized = ThumbnailUtils.extractThumbnail(rImg, 320, 240);
 			Log.v("asd", "5");
 
-			File pictureFile = new File(Environment.getExternalStorageDirectory()
-					.getPath(),"MemoirRepo");
+			File pictureFile = new File(Environment
+					.getExternalStorageDirectory().getPath(), "MemoirRepo");
 			if (!pictureFile.exists()) {
 				pictureFile.mkdir();
 			}
 
 			pictureFile = new File(Environment.getExternalStorageDirectory()
-					.getPath() + "/MemoirRepo","images");
+					.getPath() + "/MemoirRepo", "images");
 			if (!pictureFile.exists()) {
 				pictureFile.mkdir();
 			}
-			
+
 			File thumbFile = new File(Environment.getExternalStorageDirectory()
-					.getPath()+"/MemoirRepo", "thumbimages");
+					.getPath() + "/MemoirRepo", "thumbimages");
 			if (!thumbFile.exists()) {
 				thumbFile.mkdir();
 			}
-			mThumbnail = thumbFile + "/image_" + timeStamp + ".jpg";
-//			mThumbnail = thumbFile + "/image" + mImageNumber + ".jpg";
+			if (camera_type == 1){
+				mThumbnail = thumbFile + "/image_" + timeStamp + ".jpg";
+				mFilePath = pictureFile + "/image_" + timeStamp + ".jpg";
+			}
+			else{
+				mThumbnail = thumbFile + "/imagetmp_" + timeStamp + ".jpg";
+				mThumbnailRotate = thumbFile + "/image_" + timeStamp + ".jpg";
+				mFilePath = pictureFile + "/imagetmp_" + timeStamp + ".jpg";
+				mRotatedFile = pictureFile + "/image_" + timeStamp + ".jpg";				
+			}
+
 			try {
 				Log.v("asd", "saving image");
-//				if (camera_type == 1)
-//					mFilePath = pictureFile + "/image" + mImageNumber + ".jpg";
-//				else {
-//					mFilePath = pictureFile + "/imagetmp" + mImageNumber
-//							+ ".jpg";
-//					mRotatedFile = pictureFile + "/image" + mImageNumber
-//							+ ".jpg";
-//				}
-//				mImageNumber++;
-				if (camera_type == 1)
-					mFilePath = pictureFile + "/image_" + timeStamp + ".jpg";
-				else {
-					mFilePath = pictureFile + "/imagetmp_" + timeStamp
-							+ ".jpg";
-					mRotatedFile = pictureFile + "/image_" + timeStamp
-							+ ".jpg";
-				}
 				FileOutputStream fos = new FileOutputStream(mFilePath);
 				rImg.compress(CompressFormat.JPEG, 90, fos);
 				fos.close();
@@ -241,20 +235,26 @@ public class SilentPhotoShot extends Service {
 
 			// rotating photo when clicked with from back camera
 			if (camera_type == 0) {
-
+				
+				mIntentFFmpeg.setAction(FFMpegService.ActionRotatePhoto);
+				mIntentFFmpeg.putExtra(PHOTO_PATH, mThumbnail);
+				mIntentFFmpeg.putExtra(OUTPUT_PHOTO_PATH, mThumbnailRotate);
+				startService(mIntentFFmpeg);
+				mThumbnail = mThumbnailRotate;
 				mIntentFFmpeg.setAction(FFMpegService.ActionRotatePhoto);
 				mIntentFFmpeg.putExtra(PHOTO_PATH, mFilePath);
 				mIntentFFmpeg.putExtra(OUTPUT_PHOTO_PATH, mRotatedFile);
 				startService(mIntentFFmpeg);
-				mFilePath = mRotatedFile;
+				
 			}
 
 			// store the file location, type and time in database
 			if (photo_type == 1)
-				mIntent.putExtra(TYPE, "single");
+				mIntent.putExtra(TYPE, SINGLE);
 			else
-				mIntent.putExtra(TYPE, "multiShot");
-			mIntent.putExtra(LOCATION, mFilePath);
+				mIntent.putExtra(TYPE, MULTISHOT);
+			// mIntent.putExtra(LOCATION, mFilePath);
+			mIntent.putExtra(LOCATION, mThumbnail);
 			mIntent.putExtra(TIME, dTime);
 			Log.v("asd", "starting db service");
 			startService(mIntent);

@@ -40,20 +40,19 @@ import android.widget.SeekBar;
 import android.widget.VideoView;
 
 import com.agreeya.memoir.R;
+import com.agreeya.memoir.app.MemoirApp;
 import com.agreeya.memoir.receivers.AlarmReceiver;
 import com.agreeya.memoir.services.AudioRecorder;
 import com.agreeya.memoir.services.ControllerService;
+import com.agreeya.memoir.services.InsertIntoDB;
 import com.agreeya.memoir.services.SilentPhotoShot;
 import com.agreeya.memoir.services.VideoRecorder;
-import com.agreeya.memoir.sqlitedatabase.DataSource;
-import com.agreeya.memoir.sqlitedatabase.InsertIntoDB;
 
 public class DriveActivity extends Activity {
 
 	private ListView mDriveView = null;
 	private DriveAdapter mDriveAdapter = null;
 	private static ArrayList<Element> mDriveElements = null;
-	// private DataSource datasource;
 	private Intent mIntent;
 	int color;
 
@@ -63,30 +62,18 @@ public class DriveActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		DataSource.init(this, new PathChangeListner() {
-			//
-			@Override
-			public void onPathChanged() {
-				Log.v("asdfg", " onPathChanged ");
-				// if (type.equalsIgnoreCase("audio")) {
-				// Log.v("asd audio", path);
-				// mDriveElements.add(new AudioElement(path));
-				// }
-				// if (type.equalsIgnoreCase("video")) {
-				// Log.v("asd audio", path);
-				// mDriveElements.add(new VideoElement(path));
-				// }
-				// if (type.equalsIgnoreCase("single")
-				// || type.equalsIgnoreCase("multishot")) {
-				// Log.v("asd audio", path);
-				// mDriveElements.add(new PhotoElement(path));
-				// }
-				mDriveAdapter.notifyDataSetChanged();
 
-			}
-		});
-		DataSource.open();
-		// List<PathRepo> values = DataSource.getAllPaths();
+		((MemoirApp) this.getApplication()).mDBHelper
+				.setListener(new PathChangeListner() {
+					//
+					@Override
+					public void onPathChanged() {
+						Log.v("asdfg", " onPathChanged ");
+						mDriveAdapter.notifyDataSetChanged();
+
+					}
+				});
+
 		setContentView(R.layout.activity_drive);
 		RelativeLayout Container = (RelativeLayout) findViewById(R.id.Container);
 		// TODO : API check
@@ -124,32 +111,19 @@ public class DriveActivity extends Activity {
 			color = 0xfffffff; // for lighter shade on darker background
 		}
 
-		mDriveElements = new ArrayList<Element>();
-		mDriveElements = DataSource.getAllElements();
-		// Log.v("asd list", ":" + values.size());
-		// for (int i = 0; i < values.size(); i++) {
-		// path = values.get(i);
-		// Log.v("asd adding", path.getType());
-		// if (path.getType().equalsIgnoreCase("audio")) {
-		// Log.v("asd audio", path.getPath());
-		// mDriveElements.add(new AudioElement(path.getPath()));
-		// }
-		// if (path.getType().equalsIgnoreCase("video")) {
-		// Log.v("asd audio", path.getPath());
-		// mDriveElements.add(new VideoElement(path.getPath()));
-		// }
-		// if (path.getType().equalsIgnoreCase("single")
-		// || path.getType().equalsIgnoreCase("multishot")) {
-		// Log.v("asd audio", path.getPath());
-		// mDriveElements.add(new PhotoElement(path.getPath()));
-		// }
-		// }
+		mDriveElements = ((MemoirApp) this.getApplication()).mDBHelper
+				.getAllElements();
 		mDriveView = (ListView) findViewById(R.id.DriveView);
 		mDriveAdapter = new DriveAdapter(this, mDriveElements, color);
 		mDriveView.setAdapter(mDriveAdapter);
 
-		// mIntent = new Intent(this, ControllerService.class);
-		// startService(mIntent);
+	}
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// TODO Auto-generated method stub
+		super.onSaveInstanceState(outState);
+		Log.v("save", "here I come :) ");
 	}
 
 	public interface PathChangeListner {
@@ -180,34 +154,35 @@ public class DriveActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 
-		// if (item.getItemId() == R.id.action_settings) {
-		// Toast.makeText(this.getApplicationContext(),
-		// "Displaying the text from onOptionItemSelected",
-		// Toast.LENGTH_LONG).show();
-		// }
+		if (item.getItemId() == R.id.action_start_stop_trip) {
+			Log.v("test", item.getTitle().toString());
+			if (item.getTitle().toString().equalsIgnoreCase("Start Trip")) {
+				item.setTitle("Stop Trip");
+				mIntent = new Intent(this, ControllerService.class);
+				startService(mIntent);
+			} else if (item.getTitle().toString().equalsIgnoreCase("Stop Trip")) {
+				item.setTitle("Start Trip");
+				Intent intentAlarm = new Intent(this, AlarmReceiver.class);
+				AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+				alarmManager.cancel(PendingIntent.getBroadcast(this, 1,
+						intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
+				mIntent = new Intent(this, AudioRecorder.class);
+				stopService(mIntent);
+				mIntent = new Intent(this, ControllerService.class);
+				stopService(mIntent);
+				mIntent = new Intent(this, SilentPhotoShot.class);
+				stopService(mIntent);
+				mIntent = new Intent(this, VideoRecorder.class);
+				stopService(mIntent);
+				mIntent = new Intent(this, InsertIntoDB.class);
+				stopService(mIntent);
 
-		if (item.getItemId() == R.id.action_start_trip) {
-			mIntent = new Intent(this, ControllerService.class);
-			startService(mIntent);
+			}
 		}
-
-		if (item.getItemId() == R.id.action_stop_trip) {
-
-			Intent intentAlarm = new Intent(this, AlarmReceiver.class);
-			AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-			alarmManager.cancel(PendingIntent.getBroadcast(this, 1,
-					intentAlarm, PendingIntent.FLAG_UPDATE_CURRENT));
-			mIntent = new Intent(this, AudioRecorder.class);
-			stopService(mIntent);
-			mIntent = new Intent(this, ControllerService.class);
-			stopService(mIntent);
-			mIntent = new Intent(this, SilentPhotoShot.class);
-			stopService(mIntent);
-			mIntent = new Intent(this, VideoRecorder.class);
-			stopService(mIntent);
-			mIntent = new Intent(this, InsertIntoDB.class);
-			stopService(mIntent);
-
+		if (item.getItemId() == R.id.action_clear_screen) {
+			mDriveElements.clear();
+			mDriveAdapter.clearElements(mDriveElements);
+			mDriveView.setAdapter(mDriveAdapter);
 		}
 		return super.onOptionsItemSelected(item);
 
@@ -247,7 +222,7 @@ public class DriveActivity extends Activity {
 		private Context mContext = null;
 		private LayoutInflater mLayoutInflater = null;
 		private int color = 0;
-		private MediaPlayer player;
+		private MediaPlayer player = null;
 		Handler seekHandler = null;
 
 		public class ViewHolder {
@@ -293,6 +268,10 @@ public class DriveActivity extends Activity {
 			this.color = Color;
 		}
 
+		public void clearElements(ArrayList<Element> elements) {
+			this.mElements = elements;
+		}
+
 		@SuppressLint({ "NewApi", "ResourceAsColor" })
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
@@ -300,6 +279,7 @@ public class DriveActivity extends Activity {
 			Log.v("asdfg", " getView " + mElements.size() + ", position="
 					+ position);
 			Element element = mElements.get(position);
+			Log.d("asd", "Element " + element);
 
 			if (convertView == null) {
 				vh = new ViewHolder();
@@ -325,9 +305,7 @@ public class DriveActivity extends Activity {
 				convertView.setTag(vh);
 			} else {
 				vh = (ViewHolder) convertView.getTag();
-				// if (vh.type != element.type) {
-				// vh.type = element.type;
-				// }
+
 				if (element.type == Element.TYPE_PHOTO) {
 					convertView = mLayoutInflater.inflate(
 							R.layout.drive_line_item_photo, null);
@@ -359,19 +337,21 @@ public class DriveActivity extends Activity {
 
 			if (element.type == Element.TYPE_PHOTO) {
 				PhotoElement pe = (PhotoElement) element;
-				vh.iv.setImageBitmap(BitmapFactory.decodeFile(pe.path));
+				Bitmap b = BitmapFactory.decodeFile(pe.path);
+				// Log.d("asd", "Bitmap size" + b.getByteCount());
+				vh.iv.setImageBitmap(b);
 				vh.iv.setAlpha(1f);
 
 			}
 
 			if (element.type == Element.TYPE_VIDEO) {
 				VideoElement ve = (VideoElement) element;
-				// mediaController = new MediaController(this.mContext);
 				Uri video = Uri.parse(ve.path);
-				vh.vv.setVideoURI(video);
-				// vh.vv.start();
-				// mediaController.setAnchorView(vh.vv);
+				vh.vv.setZOrderOnTop(false); // for setting video visibility
 				vh.vv.setBackgroundColor(android.R.color.transparent);
+				vh.vv.setVideoURI(video);
+				// mediaController.setAnchorView(vh.vv);
+
 				vh.pv.setTag(R.string.PlayPauseKey, "Stopped");
 				vh.pv.setTag(R.string.PlayPauseVideo, vh.vv);
 				vh.pv.setOnClickListener(new View.OnClickListener() {
@@ -410,9 +390,6 @@ public class DriveActivity extends Activity {
 					}
 				});
 
-				// vh.vv.setMediaController(mediaController);
-				// vh.vv.setZOrderOnTop(true);
-				// vh.vv.requestFocus();
 			}
 
 			if (element.type == Element.TYPE_AUDIO) {
@@ -434,15 +411,12 @@ public class DriveActivity extends Activity {
 							imgvw.setImageResource(android.R.drawable.ic_media_pause);
 							mHandler.post((Seek) imgvw
 									.getTag(R.string.Seek_Bar));
-							// mHandler.post(seekRun);
-							// seekRun.player.start();
 							((Seek) imgvw.getTag(R.string.Seek_Bar)).player
 									.start();
 						} else if (imgvw.getTag(R.string.PlayPauseKey).equals(
 								"Playing")) {
 							imgvw.setTag(R.string.PlayPauseKey, "Stopped");
 							imgvw.setImageResource(android.R.drawable.ic_media_play);
-							// seekRun.player.pause();
 							((Seek) imgvw.getTag(R.string.Seek_Bar)).player
 									.pause();
 						}
@@ -452,8 +426,6 @@ public class DriveActivity extends Activity {
 									// When audio is done will change pause to
 									// play
 									public void onCompletion(MediaPlayer mp) {
-										// seekRun.imgbtn.setImageResource(android.R.drawable.ic_media_play);
-										// seekRun.skbar.setProgress(0);
 										((Seek) imgvw.getTag(R.string.Seek_Bar)).imgbtn
 												.setImageResource(android.R.drawable.ic_media_play);
 										((Seek) imgvw.getTag(R.string.Seek_Bar)).skbar
@@ -466,16 +438,6 @@ public class DriveActivity extends Activity {
 
 					}
 				});
-
-				// player.setOnCompletionListener(new OnCompletionListener() {
-				// //When audio is done will change pause to play
-				// public void onCompletion(MediaPlayer mp) {
-				// //
-				// seekRun.imgbtn.setImageResource(android.R.drawable.ic_media_play);
-				// // seekRun.skbar.setProgress(0);
-				//
-				// }
-				// });
 
 			}
 			return convertView;
@@ -497,24 +459,13 @@ public class DriveActivity extends Activity {
 		public long getItemId(int position) {
 			return position;
 		}
+
 	}
 
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-	}
-
-	@Override
-	public void onBackPressed() {
-		// TODO Auto-generated method stub
-		Intent stopIntent = new Intent(this, ControllerService.class);
-		Intent intentAlarm = new Intent(this, AlarmReceiver.class);
-		AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-		alarmManager.cancel(PendingIntent.getBroadcast(this, 1, intentAlarm,
-				PendingIntent.FLAG_UPDATE_CURRENT));
-		stopService(stopIntent);
-		super.onBackPressed();
 	}
 
 }

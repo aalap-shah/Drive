@@ -9,5 +9,6 @@
     <string name="PlayPauseVideo">PlayPauseVideo</string>
     <string name="PlayPauseKey">PlayPauseKey</string>
     <string name="Seek_Bar">Seek_Bar</string>
+    <string name="action_clear_screen">Clear Screen</string>
 
 </resources>

@@ -36,17 +36,16 @@ public final class R {
         public static final int PlayVideo=0x7f080006;
         public static final int ProgressSB=0x7f080003;
         public static final int VideoIV=0x7f080005;
+        public static final int action_clear_screen=0x7f080008;
         public static final int action_settings=0x7f080009;
-        public static final int action_start_trip=0x7f080007;
-        public static final int action_stop_trip=0x7f080008;
+        public static final int action_start_stop_trip=0x7f080007;
     }
     public static final class layout {
         public static final int activity_drive=0x7f030000;
-        public static final int activity_main=0x7f030001;
-        public static final int drive_line_item_album=0x7f030002;
-        public static final int drive_line_item_audio=0x7f030003;
-        public static final int drive_line_item_photo=0x7f030004;
-        public static final int drive_line_item_video=0x7f030005;
+        public static final int drive_line_item_album=0x7f030001;
+        public static final int drive_line_item_audio=0x7f030002;
+        public static final int drive_line_item_photo=0x7f030003;
+        public static final int drive_line_item_video=0x7f030004;
     }
     public static final class menu {
         public static final int drive=0x7f070000;
@@ -56,6 +55,7 @@ public final class R {
         public static final int PlayPauseKey=0x7f050006;
         public static final int PlayPauseVideo=0x7f050005;
         public static final int Seek_Bar=0x7f050007;
+        public static final int action_clear_screen=0x7f050008;
         public static final int action_settings=0x7f050001;
         public static final int action_start_trip=0x7f050002;
         public static final int action_stop_trip=0x7f050003;

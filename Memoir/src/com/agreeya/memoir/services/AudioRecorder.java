@@ -20,7 +20,6 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.agreeya.memoir.sqlitedatabase.InsertIntoDB;
 import com.agreeya.memoir.util.AudioChunk;
 import com.agreeya.memoir.util.Complex;
 import com.agreeya.memoir.util.FFT;
@@ -172,13 +171,7 @@ public class AudioRecorder extends Service {
 		public void saveRecording() {
 			try {
 				Log.d("asd", "Writing to file");
-//				String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
-//						.format(new Date());
-//				File f = new File("/storage/sdcard0/Download/" + "Audio_"
-//						+ timeStamp + ".wav");
-//
-//				f.createNewFile();
-				
+			
 				Time t = new Time(System.currentTimeMillis());
 				double dTime = t.getTime();
 				String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
@@ -195,9 +188,6 @@ public class AudioRecorder extends Service {
 				if (!audioFile.exists()) {
 					audioFile.mkdir();
 				}
-
-//				mAudioPath = audioFile + "/audio" + mAudioNumber + ".wav";
-//				mAudioMp3Path = audioFile + "/audio" + mAudioNumber++ + ".mp3";
 				
 				mAudioPath = audioFile + "/audio_" + timeStamp + ".wav";
 				mAudioMp3Path = audioFile + "/audio_" + timeStamp + ".mp3";
