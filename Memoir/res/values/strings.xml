@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Drive</string>
+    <string name="app_name">Memoir</string>
     <string name="action_settings">Settings</string>
     <string name="action_start_trip">Start Trip</string>
     <string name="action_stop_trip">Stop Trip</string>
     <string name="hello_world">Hello world!</string>
     <string name="PlayPauseVideo">PlayPauseVideo</string>
+    <string name="frame">Frame</string>
+    <string name="videouri">VideoUri</string>
     <string name="PlayPauseKey">PlayPauseKey</string>
+    <string name="PlayerConfig">PlayerConfig</string>
     <string name="Seek_Bar">Seek_Bar</string>
     <string name="action_clear_screen">Clear Screen</string>
+    <string name="action_pause_trip">Pause Trip</string>
+    <string name="action_compile">Compile</string>
+    <string name="action_resume_trip">Resume Trip</string>
+    <string name="PhotoViewTag">PhotoViewTag</string>
+    <string name="VideoViewTag">VideoViewTag</string>
+    <string name="AudioViewTag">AudioViewTag</string>
 
 </resources>

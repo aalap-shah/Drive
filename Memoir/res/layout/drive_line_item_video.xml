@@ -1,28 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:padding="15dp" >
 
-    <VideoView
-        android:id="@+id/VideoIV"
-        android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_centerInParent="true"
-        android:src="@drawable/ic_launcher"
-        android:visibility="visible" />
-
     <ImageView
-        android:id="@+id/PlayVideo"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_centerInParent="true"
-        android:src="@drawable/ic_menu_play_clip"
-        android:visibility="visible"/>
-    <!-- android:scaleType="fitXY"/> -->
+        android:id="@+id/drag"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentRight="true"
+        android:src="@drawable/drag" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="405dp"
+        android:layout_marginTop="5dp"
+        android:layout_below="@id/drag" >
+
+        <VideoView
+            android:id="@+id/VideoIV"
+            android:layout_width="fill_parent"
+            android:layout_height="405dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_centerInParent="true"
+            android:visibility="invisible" />
+        <!-- android:src="@drawable/ic_launcher" -->
+
+        <ImageView
+            android:id="@+id/Frame"
+            android:layout_width="match_parent"
+            android:layout_height="405dp"
+            android:layout_centerInParent="true"
+            android:scaleType="fitXY"
+            android:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/PlayVideo"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/play"
+            android:visibility="visible" />
+    </RelativeLayout>
 
 </RelativeLayout>

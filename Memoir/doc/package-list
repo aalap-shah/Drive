@@ -1,0 +1,6 @@
+com.agreeya.memoir
+com.agreeya.memoir.model
+com.agreeya.memoir.receivers
+com.agreeya.memoir.services
+com.agreeya.memoir.sqlitedatabase
+com.agreeya.memoir.waveaudiorecorder

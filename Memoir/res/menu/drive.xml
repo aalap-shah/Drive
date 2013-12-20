@@ -17,5 +17,19 @@
         android:orderInCategory="100"
         android:showAsAction="never"
         android:title="@string/action_clear_screen"/>
+    
+    <item
+        android:id="@+id/action_pause_resume"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:visible="false"
+        android:title="@string/action_pause_trip"
+        />
+    
+    <item
+        android:id="@+id/action_compile"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_compile"/>
 
 </menu>

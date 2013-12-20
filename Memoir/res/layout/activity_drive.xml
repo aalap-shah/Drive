@@ -6,7 +6,7 @@
     android:paddingLeft="4dp"
     android:paddingRight="4dp" >
 
-    <ListView
+     <com.agreeya.memoir.model.DynamicListView
         android:id="@+id/DriveView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,7 +14,6 @@
         android:layout_alignParentTop="true"
         android:divider="@android:color/transparent"
         android:dividerHeight="2.0dp"
-        android:scrollbars="none" >
-    </ListView>
-
+        android:scrollbars="none" />
+    
 </RelativeLayout>

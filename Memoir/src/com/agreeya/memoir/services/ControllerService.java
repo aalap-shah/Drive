@@ -1,60 +1,78 @@
 package com.agreeya.memoir.services;
 
-import java.util.Random;
+import com.agreeya.memoir.MemoirApp;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
+/**
+ * Controller Service for handling the user command(start/stop and pause/resume
+ * trip) and starting the following two services
+ *  1) Dispatcher service for dispatching the audio/video/photo service randomly
+ *  2) Database service for storing the captured media information into the DB
+ * 
+ */
 public class ControllerService extends Service {
 
-	private int[] camera = { 0, 1 };
-	private int[] shotmode = { 1, 5 };
 	private Intent mIntent;
-	private String CAMERA = "camera";
-	private String PHOTO = "photo";
+	private Intent mStoreIntoDB;
+	private static String COMMAND = "command";
+	private static String WhatToDo = "what_to_do";
+	private static String LOCATION = "location";
+	private static String TYPE = "type";
+	private static String TIME = "time";
+	private static String RETURN_RESPONSE = "ReturnResponse";
+	private static String ROUT = "rout";
+	private static String TRIP = "trip";
+
+	private PendingIntent mPendingLocal;
+	private int mRout;
 
 	@Override
 	public void onCreate() {
 		// TODO Auto-generated method stub
 		super.onCreate();
-		Log.v("Memoir", "Controller Serivce Created");
-		int funcMemoir = new Random().nextInt(3);
-		int cameraType = new Random().nextInt(2);
-		int photoType = new Random().nextInt(2);
-		switch (funcMemoir) {
+		Log.d("asd", "OnCreate of Controller Service");
+		Intent local = new Intent(getApplicationContext(),
+				ControllerService.class);
+		mPendingLocal = PendingIntent.getService(getApplicationContext(), 0,
+				local, 0);
+		mIntent = new Intent(this, DispatcherService.class);
+		mStoreIntoDB = new Intent(this, InsertIntoDBService.class);
+	}
 
-		case 0:
-			mIntent = new Intent(this.getApplicationContext(),
-					VideoRecorder.class);
-			mIntent.putExtra(CAMERA, camera[cameraType]);
-			Log.v("Memoir", "Starting Video Recording ");
-			startService(mIntent);
-			break;
-
-		case 1:
-			mIntent = new Intent(this.getApplicationContext(),
-					AudioRecorder.class);
-			Log.v("Memoir", "Starting Audio Recording");
-			startService(mIntent);
-			break;
-
-		case 2:
-			mIntent = new Intent(this.getApplicationContext(),
-					SilentPhotoShot.class);
-			mIntent.putExtra(CAMERA, camera[cameraType]);
-			mIntent.putExtra(PHOTO, shotmode[photoType]);
-			Log.v("Memoir", "Starting photoshot");
-			startService(mIntent);
-			break;
-
-		default:
-			Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_LONG)
-					.show();
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		// TODO Auto-generated method stub
+		Log.d("asd", "OnStart of Controller Service");
+		if (intent == null) {
+			return super.onStartCommand(intent, flags, startId);
 		}
-		stopSelf();
+		Log.v("asd", "controller Service on start command");
+		mRout = intent.getIntExtra(ROUT, 99);
+		Log.v("Controller", "mRout " + mRout);
+		if (mRout == 1) {
+			mIntent.putExtra(WhatToDo, intent.getStringExtra(COMMAND));
+			mIntent.putExtra(RETURN_RESPONSE, mPendingLocal);
+			mIntent.putExtra(ROUT, mRout);
+			mIntent.putExtra(TRIP, ((MemoirApp) this.getApplication()).trip);
+			startService(mIntent);
+		}
+
+		boolean check = intent.getBooleanExtra("store", false);
+		if (check) {
+			mStoreIntoDB.putExtra(TYPE, intent.getStringExtra(TYPE));
+			mStoreIntoDB.putExtra(LOCATION, intent.getStringExtra(LOCATION));
+			mStoreIntoDB.putExtra(TIME, intent.getDoubleExtra(TIME, 0000));
+			mStoreIntoDB.putExtra(TRIP, intent.getIntExtra(TRIP, 9900));
+			Log.v("asd", "starting db service");
+			startService(mStoreIntoDB);
+		}
+
+		return Service.START_NOT_STICKY;
 	}
 
 	@Override
@@ -65,7 +83,7 @@ public class ControllerService extends Service {
 
 	@Override
 	public void onDestroy() {
-		// TODO Auto-generated method stub
+		Log.d("asd", "OnDestroy of Controller Service");
 		super.onDestroy();
 	}
 
